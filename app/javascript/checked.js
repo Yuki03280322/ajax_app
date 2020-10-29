@@ -14,7 +14,7 @@ function check() {
       const XHR = new XMLHttpRequest();
       // openでリクエストを初期化する
       XHR.open("GET", `/posts/${postId}`, true);
-      // レスポンスのタイプを指定する
+      // レスポンスのタイプを指定、ブラウザからサーバへリクエストを送る際、情報を取得する場合はGETメソッド、情報を送信する場合はPOSTメソッドを利用
       XHR.responseType = "json";
       // sendでリクエストを送信する
       XHR.send();
