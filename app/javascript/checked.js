@@ -1,38 +1,26 @@
 function check() {
-  // 表示されているすべてのメモを取得している
   const posts = document.querySelectorAll(".post");
   posts.forEach(function (post) {
      if (post.getAttribute("data-load") != null) {
       return null;
     }
     post.setAttribute("data-load", "true");
-    // メモをクリックした場合に実行する処理を定義している
     post.addEventListener("click", () => {
-      // どのメモをクリックしたのか、カスタムデータを利用して取得している
       const postId = post.getAttribute("data-id");
-      // Ajaxに必要なオブジェクトを生成している
       const XHR = new XMLHttpRequest();
-      // openでリクエストを初期化する
       XHR.open("GET", `/posts/${postId}`, true);
-      // レスポンスのタイプを指定、ブラウザからサーバへリクエストを送る際、情報を取得する場合はGETメソッド、情報を送信する場合はPOSTメソッドを利用
       XHR.responseType = "json";
-      // sendでリクエストを送信する
       XHR.send();
-      // レスポンスを受け取った時の処理を記述する
       XHR.onload = () => {
         if (XHR.status != 200) {
-          // レスポンスの HTTP ステータスを解析し、該当するエラーメッセージをアラートで表示するようにしている
           alert(`Error ${XHR.status}: ${XHR.statusText}`);
-          // 処理を終了している
           return null;          
         }
-        // レスポンスされたデータを変数itemに代入している
         const item = XHR.response.post;
         if (item.checked === true) {
-          // 既読状態であれば、灰色に変わるcssを適用するためのカスタムデータを追加している
           post.setAttribute("data-check", "true");
         } else if (item.checked === false) {
-          // 未読状態であれば、カスタムデータを削除している
+          // post.setAttribute("data-check", "false");
           post.removeAttribute("data-check");
         }
       };
@@ -40,10 +28,41 @@ function check() {
   });
 }
 setInterval(check, 1000);
+/* 
 
+1 checkメソッドを定義
+?2HTMLファイルから.postのセレクター要素を全て取得しpostsへ代入(document.getElementsByClassName("post")でも可？)
+セレクターとクラスの取得は違いはあるが、今は違いはあるという認識で問題ない
+3 取得したposts要素の数だけ処理を繰り返す
+4,5 もし、その要素の"data-load"属性の値がnullではなかった時nullを返り値にする
+     "data-load"が定義されたものならどこで定義された？→8行目でsetされるので1回目はスルー
+     return null;の時点で全ての動作を終了する
+7 取得した要素の属性に"data-load"を設置し、その値にtrueを設定する
+8 取得した要素をクリックした時、イベント発火
+9 取得した要素から"data-id"の値を取得し、postIdに代入（この"data-id"はHTMLでカスタムデータとして"post"クラスに追加された属性で、値としてそれぞれの投稿のidが設定されている
+9 これによりどの投稿をクリックしたか？を見分けた上で変数に代入している
+10 ajax通信を成立させるために必要なXMLHttpRequestオブジェクトを生成することにより、XMLHttpRequestのメソッドやプロパティ、イベントを使えるようにし、見やすく変数に代入
+11 openメソッドにより初期化した上で、リクエストの種類とアクセス先url、（通信の種類や、ユーザー名、パスワードの指定は省略可）を設定する
+11 今回は情報の取得（VIEWでクリックされたという情報）の為、"GET"、パスはクリックされた要素（解釈は、変化させたい要素又はページをここで指定するでよい？）,非同期通信のため"true"
+12 サーバーから受け取るレスポンスの形式に"json"を指定
+13 サーバーへリクエストを送信
+14 レスポンスを受け取った時の処理について
+15 もし、HTTPステータスが200以外の時
+17 alertメソッドで、該当のエラーメッセージを表示し、返り値を無にする
+?19 レスポンスされたデータを変数itemに代入
+(response.postとは具体的に、クリックされた要素の属性（id,check）の値（idカラムとcheckedカラムの値）を非同期で得た結果？このリクエストを明確に記されているのはどこ？)
+↑ コントローラーから受け取った情報がrenderでpostとして受け取っている。ここでそれをさらに変数に入れている。
+20 受け取ったidカラムとcheckedカラムの内、checkedカラムの値がtrueならば（既読ならば）
+21 その投稿の"data-check"属性の値を"true"に設定する(CSS作動)
+22 trueではなく、falseのとき、
+?23 "data-check"属性を削除する setAttribute('data-check', "false")ではだめ？なぜ削除？
+↑ CSSはtrueの時のみしか適用していないので、falseだとどうしたら良いかわからずエラーが出る（CSSの解除ができない）
+29 checkメソッドを1秒に一度実行
 
-
-
+"data-load"属性の存在意義
+全体的にカスタムデータの"data-check"と、カラムの"checked"が混在していて使い分け方が分からない
+↑ JavaScriptはあくまでHTML上の要素を指定し変化させる為、setAttribute等でitem.checkedのようにカラムを指定することができない
+ */
 /*
 4-6 1回目 イベント発火が起きている要素にdata-load = "true"はまだ追加されていないため、
           if文の処理は読み込まれずに、7行目に処理が移る
